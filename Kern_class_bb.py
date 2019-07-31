@@ -2,15 +2,13 @@
 import serial
 import time
 #import threading
-from serial.tools.list_ports import comports
 from datetime import datetime
-
-
 
 class KernBalance:
     """Repeat `function` every `interval` seconds."""
     def __init__(self, com, timeout):
         self.com = com
+        print(com)
         self.timeout = timeout
         self.port = serial.Serial(port=self.com, inter_byte_timeout=self.timeout)
         #self.get_name()
@@ -24,31 +22,24 @@ class KernBalance:
                     ser.flushInput()
                     ser.write(ascii+b'\r\n')
                     time.sleep(.1)
-                    incommingBYTES =ser.inWaiting()
-                    #incommingBYTES =self.port.inWaiting()
+                    incommingBYTES = ser.inWaiting()
                     if incommingBYTES == 0:
                         value = "NAN"
                         print("balance eteinte")
-                        return value
-
                     elif incommingBYTES == 5 :
                         value = "NAN"
                         print("out of range")
-                        return value
-
                     else:
                         reception = ser.read(incommingBYTES-2)
                         value = reception[8:]
-                        #print(value)
-                        return value
+                    ser.close()
                 else:
                     value = "NAN"
                     print("sernotconnect")
-                    return value
         except serial.serialutil.SerialException:
             print("serialexeption")
             value = "NAN"
-            return value
+        return value
 
     def get_weight(self):
         cmd = b'SI'
@@ -60,7 +51,7 @@ class KernBalance:
 
 class Kerns:
     def __init__(self):
-        self.comList = ["scale1","scale2","scale3","scale4","scale5","scale6"]
+        self.comList = ["scale1","scale2","scale3","scale4","scale5","scale6","scale7","scale8"]
         self.kerns = self.comFilter()
 
     def comFilter(self):
@@ -70,19 +61,19 @@ class Kerns:
             test.flushInput()
             test.write(b'SI\r\n')
             time.sleep(.1)
-            incommingBYTES =test.inWaiting()
-            test.close()
+            incommingBYTES = test.inWaiting()
+            #test.close()
             if incommingBYTES == 0:
                 kernList = kernList
             else:
-                kernList.append(KernBalance(y,3))
+                kernList.append(KernBalance('/dev/'+y,3))
         return kernList
 
     def getWeights(self):
         weights = {}
         for r in self.kerns:
             weight = r.get_weight()
-            weights.update({r.com:weight})
+            weights.update({r.com[5:]:weight})
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         weights.update({"TIMESTAMP":timestamp})
         return weights

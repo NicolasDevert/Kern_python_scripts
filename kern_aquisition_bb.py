@@ -1,17 +1,15 @@
-from Kern_class import Kerns
+from Kern_class_bb import Kerns
 import os
-import time
 import csv
+import time
 
-
-ks = Kerns()
-file_name = 'home/repo/mesure_balance.csv'
-
+file_name = '/home/pi/Documents/mesure_balance.csv'
+#print(file_name)
 
 while True:
+    ks = Kerns()
     dict = ks.getWeights()
     print(dict)
-
     if os.path.isfile(file_name):
         with open(file_name, 'a', newline='') as outfile:
             writer = csv.writer(outfile, delimiter=',')
@@ -21,3 +19,7 @@ while True:
             writer = csv.writer(outfile, delimiter=',')
             writer.writerow(dict.keys())
             writer.writerow(dict.values())
+    time.sleep(5)
+    
+
+
